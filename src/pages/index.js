@@ -1,56 +1,91 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function Home() {
-  const [password, setPassword] = useState('');
-  const [status, setStatus] = useState('');
-  const [win, setWin] = useState(false);
-  const staticPassword = 'letmein'; // Set your static password here
-  const winningNumber = 42;
+  const staticPassword = "letmein";
+  const [step, setStep] = useState("password"); // password | otp | success
+  const [password, setPassword] = useState("");
+  const [otpInput, setOtpInput] = useState("");
+  const [randomOTP, setRandomOTP] = useState(null);
+  const [status, setStatus] = useState("");
 
-  const handleLogin = () => {
-    if (password !== staticPassword) {
-      setStatus('Incorrect password.');
-      return;
-    }
-
-    const luckyNumber = Math.floor(Math.random() * 100) + 1;
-    const padded = String(luckyNumber).padStart(3, '0');
-    if (luckyNumber === winningNumber) {
-      setWin(true);
+  const handlePasswordSubmit = () => {
+    if (password === staticPassword) {
+      const otp = Math.floor(Math.random() * 100) + 1;
+      setRandomOTP(otp);
+      setStep("otp");
+      setStatus("");
     } else {
-      setStatus(`Try again! Your number was: ${padded}`);
+      setStatus("Incorrect password.");
+    }
+  };
+
+  const handleOTPSubmit = () => {
+    if (parseInt(otpInput) === randomOTP) {
+      setStep("success");
+    } else {
+      setStatus(`Try again! Your OTP guess was: ${otpInput.padStart(3, "0")}`);
     }
   };
 
   return (
     <div
       className="min-h-screen bg-cover bg-center flex items-center justify-center"
-      style={{ backgroundImage: `url('/bg.jpg')` }}
+      style={{ backgroundImage: "url('/bg.jpg')" }}
     >
-      {!win ? (
-        <div className="bg-white bg-opacity-80 p-10 rounded-lg shadow-lg text-center">
-          <h1 className="text-2xl font-bold mb-4">Login</h1>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter Password"
-            className="px-4 py-2 border rounded w-full mb-4"
-          />
-          <button
-            onClick={handleLogin}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Submit
-          </button>
-          <p className="mt-4 text-red-600">{status}</p>
-        </div>
-      ) : (
-        <div className="text-center">
-          <h2 className="text-white text-3xl font-bold mb-4">🎉 You Logged In Successfully!</h2>
-          <img src="/victory.jpg" alt="Victory" className="rounded-lg shadow-lg" />
-        </div>
-      )}
+      <div className="bg-opacity-90 p-8 rounded-lg shadow-lg text-center max-w-md w-full">
+        {step === "password" && (
+          <>
+            <h1 className="text-2xl font-bold mb-4">Login</h1>
+            <input
+              type="password"
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="border px-4 py-2 w-full mb-4 rounded"
+            />
+            <button
+              onClick={handlePasswordSubmit}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
+            >
+              Submit
+            </button>
+          </>
+        )}
+
+        {step === "otp" && (
+          <>
+            <h1 className="text-xl font-bold mb-4">Enter OTP</h1>
+            <input
+              type="number"
+              placeholder="Enter OTP (001–100)"
+              value={otpInput}
+              onChange={(e) => setOtpInput(e.target.value)}
+              className="border px-4 py-2 w-full mb-4 rounded"
+            />
+            <button
+              onClick={handleOTPSubmit}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full"
+            >
+              Verify
+            </button>
+          </>
+        )}
+
+        {step === "success" && (
+          <>
+            <h2 className="text-2xl font-bold text-green-700 mb-4">
+              🎉 Success!
+            </h2>
+            <img
+              src="/victory.jpg"
+              alt="Victory"
+              className="rounded shadow-md mx-auto"
+            />
+          </>
+        )}
+
+        {status && <p className="mt-4 text-red-600">{status}</p>}
+      </div>
     </div>
   );
 }
