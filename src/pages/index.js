@@ -1,17 +1,13 @@
 import { useState } from "react";
 
 export default function Home() {
-  const staticPassword = "letmein";
-  const [step, setStep] = useState("password"); // password | otp | success
+  const [step, setStep] = useState("password");
   const [password, setPassword] = useState("");
   const [otpInput, setOtpInput] = useState("");
-  const [randomOTP, setRandomOTP] = useState(null);
   const [status, setStatus] = useState("");
 
   const handlePasswordSubmit = () => {
-    if (password === staticPassword) {
-      const otp = Math.floor(Math.random() * 100) + 1;
-      setRandomOTP(otp);
+    if (password === "letmein") {
       setStep("otp");
       setStatus("");
     } else {
@@ -19,11 +15,25 @@ export default function Home() {
     }
   };
 
-  const handleOTPSubmit = () => {
-    if (parseInt(otpInput) === randomOTP) {
-      setStep("success");
-    } else {
-      setStatus(`Try again! Your OTP guess was: ${otpInput.padStart(3, "0")}`);
+  const handleOTPSubmit = async () => {
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, otp: otpInput }),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 200) {
+        setStep("success");
+      } else {
+        setStatus(
+          `Try again! Your OTP guess was: ${otpInput.padStart(3, "0")}`
+        );
+      }
+    } catch (err) {
+      setStatus("Error connecting to server.");
     }
   };
 
@@ -32,7 +42,7 @@ export default function Home() {
       className="min-h-screen bg-cover bg-center flex items-center justify-center"
       style={{ backgroundImage: "url('/bg.jpg')" }}
     >
-      <div className="bg-opacity-90 p-8 rounded-lg shadow-lg text-center max-w-md w-full">
+      <div className=" bg-opacity-90 p-8 rounded-lg shadow-lg text-center max-w-md w-full">
         {step === "password" && (
           <>
             <h1 className="text-2xl font-bold mb-4">Login</h1>
